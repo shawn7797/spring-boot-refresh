@@ -5,19 +5,37 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
+
 @Service
 public class OrderService {
-    private PaymentService paymentService;
+    private final PaypalPaymentService paypalPaymentService;
+    private final StripePaymentService stripePaymentService;
 
-    public void setPaymentService(PaymentService paymentService) {
-        this.paymentService = paymentService;
+    public OrderService(
+            PaypalPaymentService paypalPaymentService,
+            StripePaymentService stripePaymentService) {
+        this.paypalPaymentService = paypalPaymentService;
+        this.stripePaymentService = stripePaymentService;
     }
 
-    public OrderService(PaymentService paymentService) {
-        this.paymentService = paymentService;
+    public void payWithPaypal() {
+        paypalPaymentService.processPayment(10.55);
+    }
+
+    public void payWithStripe() {
+        stripePaymentService.processPayment(10.55);
     }
 
     public void placeOrder() {
-        paymentService.processPayment(10.55);
+        payWithPaypal();
+    }
+
+    public void placeOrder(String paymentMethod) {
+        if (Objects.equals(paymentMethod, "stripe")) {
+            payWithStripe();
+        } else {
+            payWithPaypal();
+        }
     }
 }
